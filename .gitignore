@@ -1,0 +1,22 @@
+/broadcast/
+/.gas-snapshot
+/cache/
+/lib/
+/node_modules/
+/out/
+/work/
+/package.json
+/serve.mjs
+/script/DeployIndependentToken.s.sol
+/src/IndependentToken.sol
+/test/IndependentToken.t.sol
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Local deploy helper and intermediate image-generation files
+/deploy/
+/outputs/qeravon-logo/*-source.png
+/outputs/qeravon-logo/*-v2.png
+/outputs/qeravon-logo/*-final.png
