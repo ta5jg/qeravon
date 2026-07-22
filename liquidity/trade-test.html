@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Qeravon Kontrollü Alım / Satım Testi</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #060b1a; color: #eef3ff; }
+    main { width: min(760px, calc(100% - 32px)); padding: 34px; border: 1px solid #26365c; border-radius: 28px; background: #0b1224; }
+    header { display: flex; align-items: center; gap: 18px; }
+    img { width: 78px; height: 78px; }
+    h1 { margin: 0; font-size: 2rem; }
+    .muted { color: #9eabc8; margin-top: 6px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 28px 0; }
+    .card { padding: 18px; border: 1px solid #243352; border-radius: 18px; background: #0f1930; }
+    .label { color: #9eabc8; font-size: .9rem; }
+    .value { margin-top: 8px; font-size: 1.15rem; font-weight: 700; }
+    button { width: 100%; margin-top: 12px; padding: 16px; border: 0; border-radius: 14px; font-weight: 800; font-size: 1rem; cursor: pointer; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    #connect { background: #e5ecf8; color: #111827; }
+    #approve { background: #22d3ee; color: #082f49; }
+    #sell { background: linear-gradient(90deg,#f59e0b,#ef4444); color: white; }
+    #buy { background: linear-gradient(90deg,#06b6d4,#7c3aed); color: white; }
+    pre { margin-top: 18px; padding: 16px; min-height: 72px; white-space: pre-wrap; border-radius: 14px; background: #070d1b; color: #b8c6e6; }
+    .note { color: #fbbf24; line-height: 1.55; }
+    @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } main { padding: 22px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="../qeravon-logo.png" alt="Qeravon" />
+    <div><h1>QRVN / WBNB</h1><div class="muted">PancakeSwap V2 kontrollü piyasa testi</div></div>
+  </header>
+  <section class="grid">
+    <div class="card"><div class="label">Satış testi</div><div class="value">4 QRVN → BNB</div></div>
+    <div class="card"><div class="label">Alış testi</div><div class="value">0,0001 BNB → QRVN</div></div>
+    <div class="card"><div class="label">Maksimum fiyat kayması</div><div class="value">%5</div></div>
+    <div class="card"><div class="label">Router izni</div><div class="value">Yalnızca 4 QRVN</div></div>
+  </section>
+  <p class="note">Önce 4 QRVN izni, sonra satış, en son alış yapılır. Her adım ayrı MetaMask onayıdır. Sınırsız izin verilmez.</p>
+  <button id="connect">1 · Cüzdanı doğrula</button>
+  <button id="approve" disabled>2 · 4 QRVN izni ver</button>
+  <button id="sell" disabled>3 · 4 QRVN sat</button>
+  <button id="buy" disabled>4 · 0,0001 BNB ile QRVN al</button>
+  <pre id="status">Hazır.</pre>
+</main>
+<script>
+  const TOKEN = "0x1bCdde9FC6B2f2d190A51A9f85c405Aa7E866f3E";
+  const ROUTER = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
+  const WBNB = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
+  const EXPECTED_WALLET = "0x1ca30BC967A88Fe925799f7c17803545d3acbE31".toLowerCase();
+  const SELL_AMOUNT = ethers.parseUnits("4", 18);
+  const BUY_AMOUNT = ethers.parseEther("0.0001");
+  const SLIPPAGE_BPS = 500n;
+  const tokenAbi = ["function allowance(address,address) view returns(uint256)", "function approve(address,uint256) returns(bool)", "function balanceOf(address) view returns(uint256)"];
+  const routerAbi = [
+    "function getAmountsOut(uint256,address[]) view returns(uint256[])",
+    "function swapExactTokensForETHSupportingFeeOnTransferTokens(uint256,uint256,address[],address,uint256)",
+    "function swapExactETHForTokensSupportingFeeOnTransferTokens(uint256,address[],address,uint256) payable"
+  ];
+  const status = document.querySelector("#status");
+  const connect = document.querySelector("#connect");
+  const approve = document.querySelector("#approve");
+  const sell = document.querySelector("#sell");
+  const buy = document.querySelector("#buy");
+  let provider, signer, account, token, router;
+  const minOut = quote => quote * (10000n - SLIPPAGE_BPS) / 10000n;
+  const short = value => `${value.slice(0,10)}…${value.slice(-8)}`;
+  async function refresh() {
+    const [allowance, balance] = await Promise.all([token.allowance(account, ROUTER), token.balanceOf(account)]);
+    approve.disabled = allowance >= SELL_AMOUNT;
+    sell.disabled = allowance < SELL_AMOUNT || balance < SELL_AMOUNT;
+    buy.disabled = false;
+    status.textContent = `Cüzdan doğrulandı: ${account}\nQRVN: ${ethers.formatUnits(balance,18)}\nSatış izni: ${ethers.formatUnits(allowance,18)} QRVN`;
+  }
+  connect.onclick = async () => {
+    try {
+      if (!window.ethereum) throw new Error("MetaMask bulunamadı.");
+      provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const network = await provider.getNetwork();
+      if (network.chainId !== 56n) throw new Error("MetaMask ağını BNB Chain olarak değiştir.");
+      signer = await provider.getSigner(); account = await signer.getAddress();
+      if (account.toLowerCase() !== EXPECTED_WALLET) throw new Error(`Yanlış cüzdan: ${account}`);
+      token = new ethers.Contract(TOKEN, tokenAbi, signer); router = new ethers.Contract(ROUTER, routerAbi, signer);
+      await refresh();
+    } catch (e) { status.textContent = e.message; }
+  };
+  approve.onclick = async () => {
+    try {
+      approve.disabled = true; status.textContent = "4 QRVN izin işlemi MetaMask onayı bekliyor…";
+      const tx = await token.approve(ROUTER, SELL_AMOUNT); status.textContent = `İzin gönderildi: ${short(tx.hash)}\nOnay bekleniyor…`;
+      await tx.wait(); await refresh();
+    } catch (e) { status.textContent = `İzin işlemi tamamlanmadı: ${e.shortMessage || e.message}`; await refresh(); }
+  };
+  sell.onclick = async () => {
+    try {
+      sell.disabled = true;
+      const path = [TOKEN, WBNB]; const amounts = await router.getAmountsOut(SELL_AMOUNT, path);
+      const deadline = Math.floor(Date.now()/1000) + 600;
+      status.textContent = `Beklenen çıktı: ${ethers.formatEther(amounts[1])} BNB\nSatış MetaMask onayı bekliyor…`;
+      const tx = await router.swapExactTokensForETHSupportingFeeOnTransferTokens(SELL_AMOUNT, minOut(amounts[1]), path, account, deadline);
+      status.textContent = `Satış gönderildi: ${short(tx.hash)}\nOnay bekleniyor…`; await tx.wait(); await refresh();
+    } catch (e) { status.textContent = `Satış tamamlanmadı: ${e.shortMessage || e.message}`; await refresh(); }
+  };
+  buy.onclick = async () => {
+    try {
+      buy.disabled = true;
+      const path = [WBNB, TOKEN]; const amounts = await router.getAmountsOut(BUY_AMOUNT, path);
+      const deadline = Math.floor(Date.now()/1000) + 600;
+      status.textContent = `Beklenen çıktı: ${ethers.formatUnits(amounts[1],18)} QRVN\nAlış MetaMask onayı bekliyor…`;
+      const tx = await router.swapExactETHForTokensSupportingFeeOnTransferTokens(minOut(amounts[1]), path, account, deadline, { value: BUY_AMOUNT });
+      status.textContent = `Alış gönderildi: ${short(tx.hash)}\nOnay bekleniyor…`; await tx.wait(); await refresh();
+    } catch (e) { status.textContent = `Alış tamamlanmadı: ${e.shortMessage || e.message}`; buy.disabled = false; }
+  };
+</script>
+</body>
+</html>

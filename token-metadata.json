@@ -5,7 +5,8 @@
   "chainId": 56,
   "address": "0x1bCdde9FC6B2f2d190A51A9f85c405Aa7E866f3E",
   "description": "Qeravon is a fixed-supply ERC-20 token on BNB Smart Chain with no owner, proxy, upgrade, tax, blacklist, pause, transfer gate, or post-deployment minting.",
-  "logoURI": "https://raw.githubusercontent.com/ta5jg/qeravon/main/qeravon-logo.png",
+  "logoURI": "https://ta5jg.github.io/qeravon/qeravon-logo.png",
+  "website": "https://ta5jg.github.io/qeravon/",
   "repository": "https://github.com/ta5jg/qeravon",
   "explorer": "https://bscscan.com/token/0x1bCdde9FC6B2f2d190A51A9f85c405Aa7E866f3E",
   "markets": [
