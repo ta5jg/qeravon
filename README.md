@@ -21,6 +21,8 @@ Flap or an upgradeable proxy.
 - Master artwork: `outputs/qeravon-logo/qeravon-logo-master.png`
 - Wallet format: transparent RGBA PNG, 256 x 256 pixels
 - SHA-256: `cd52343d691baf1d42486e709e52d8e2357a4edf34beb8043968faa8935f599c`
+- Public logo URL: `https://raw.githubusercontent.com/ta5jg/qeravon/main/qeravon-logo.png`
+- Canonical metadata: `token-metadata.json`
 
 This file is the canonical Qeravon logo for explorer, DEX, wallet, token-list,
 and metadata submissions. Do not create separate visually different copies for
