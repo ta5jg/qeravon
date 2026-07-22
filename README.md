@@ -72,3 +72,22 @@ the initial recipient.
 
 The BscScan standard-input artifact is available at
 `outputs/Qeravon-BscScan-Standard-Input.json`.
+
+## PancakeSwap V2 market
+
+- Pair: `0xC429b0Fd4761A267D24279Bb22ef90200E2C17aC`
+- Assets: QRVN / WBNB
+- Initial reserves: `1,000 QRVN / 0.025 BNB`
+- Initial price: `0.000025 BNB` per QRVN
+- Liquidity transaction: `0xc286d4fdaf1f64037a2cc8d0c78c96418acf85bf3727b7bd8f3ecd2e1ea690f3`
+- LP recipient: `0x1ca30BC967A88Fe925799f7c17803545d3acbE31`
+
+The pair received two external buys six seconds after creation:
+
+- `0xc7a315d33b868c591099cace248d026ae89ad4879ea70de2094f8afa46ff6ade`:
+  `0.0001 BNB` for `3.974143168756661 QRVN`
+- `0xc28fe30528c7db4f55eb12c5925f5a1e307696aea5d0b735a9f4cbc2bda429c6`:
+  `0.000198 BNB` for `7.776264372848418 QRVN`
+
+These transactions provide on-chain evidence that the permissionless market
+path discovered and traded the new pair immediately after creation.

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Qeravon · PancakeSwap V2 Likidite</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at top,#172554,#070b14 58%); color: #eef2ff; }
+    main { width: min(720px,calc(100% - 32px)); padding: 28px; box-sizing: border-box; border: 1px solid #29395d; border-radius: 24px; background: rgba(9,15,28,.94); box-shadow: 0 24px 80px #0008; }
+    .brand { display: flex; align-items: center; gap: 16px; }
+    .brand img { width: 76px; height: 76px; }
+    h1 { margin: 0 0 5px; }
+    .muted,.label { color: #94a3b8; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 22px 0; }
+    .card { padding: 15px; border: 1px solid #24304a; border-radius: 14px; background: #0b1220; }
+    .value { margin-top: 6px; font-weight: 700; overflow-wrap: anywhere; }
+    button { width: 100%; padding: 14px; margin-top: 12px; border: 0; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; }
+    button:disabled { opacity: .42; cursor: not-allowed; }
+    #connect { background: #e2e8f0; color: #0f172a; }
+    #approve { background: #22d3ee; color: #082f49; }
+    #liquidity { background: linear-gradient(90deg,#22d3ee,#8b5cf6); color: white; }
+    #status { min-height: 70px; padding: 14px; white-space: pre-wrap; border-radius: 12px; background: #060b14; color: #c7d2fe; }
+    .warning { color: #fbbf24; }
+    code { color: #a5b4fc; }
+    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="brand">
+    <img src="/qeravon-logo.png" alt="Qeravon logo">
+    <div><h1>QRVN / WBNB</h1><div class="muted">PancakeSwap V2 başlangıç likiditesi</div></div>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="label">QRVN miktarı</div><div class="value">1.000 QRVN</div></div>
+    <div class="card"><div class="label">BNB miktarı</div><div class="value">0,025 BNB</div></div>
+    <div class="card"><div class="label">Başlangıç fiyatı</div><div class="value">0,000025 BNB / QRVN</div></div>
+    <div class="card"><div class="label">Tahmini USD fiyatı</div><div class="value">≈ $0,0143 / QRVN</div></div>
+  </div>
+  <p class="warning">İki ayrı MetaMask onayı gerekir. İzin yalnızca 1.000 QRVN'dir. LP tokenları bağlı cüzdana gönderilir.</p>
+  <button id="connect">1 · Cüzdanı doğrula</button>
+  <button id="approve" disabled>2 · 1.000 QRVN izni ver</button>
+  <button id="liquidity" disabled>3 · Havuzu oluştur</button>
+  <p id="status">Hazır. Önce cüzdanı doğrula.</p>
+</main>
+<script>
+  const ACCOUNT = "0x1ca30bc967a88fe925799f7c17803545d3acbe31";
+  const TOKEN = "0x1bcdde9fc6b2f2d190a51a9f85c405aa7e866f3e";
+  const ROUTER = "0x10ed43c718714eb63d5aa57b78b54704e256024e";
+  const FACTORY = "0xca143ce32fe78f1f7019d7d551a6402fc5350c73";
+  const WBNB = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c";
+  const TOKEN_AMOUNT = 1_000n * 10n ** 18n;
+  const BNB_AMOUNT = 25n * 10n ** 15n;
+  const MIN_TOKEN = TOKEN_AMOUNT * 99n / 100n;
+  const MIN_BNB = BNB_AMOUNT * 99n / 100n;
+  const MIN_BALANCE = BNB_AMOUNT + 1n * 10n ** 15n;
+
+  const status = document.querySelector("#status");
+  const approveButton = document.querySelector("#approve");
+  const liquidityButton = document.querySelector("#liquidity");
+  let account;
+
+  const word = value => BigInt(value).toString(16).padStart(64,"0");
+  const addressWord = value => value.toLowerCase().replace(/^0x/,"").padStart(64,"0");
+  const short = value => `${value.slice(0,10)}…${value.slice(-8)}`;
+
+  async function rpc(method, params = []) {
+    return ethereum.request({ method, params });
+  }
+
+  async function allowance() {
+    const data = "0xdd62ed3e" + addressWord(ACCOUNT) + addressWord(ROUTER);
+    return BigInt(await rpc("eth_call", [{ to: TOKEN, data }, "latest"]));
+  }
+
+  async function pairAddress() {
+    const data = "0xe6a43905" + addressWord(TOKEN) + addressWord(WBNB);
+    const result = await rpc("eth_call", [{ to: FACTORY, data }, "latest"]);
+    return `0x${result.slice(-40)}`;
+  }
+
+  async function refresh() {
+    if (!window.ethereum) throw new Error("MetaMask bulunamadı.");
+    const chainId = await rpc("eth_chainId");
+    const accounts = await rpc("eth_accounts");
+    account = accounts[0]?.toLowerCase();
+    if (chainId !== "0x38") throw new Error("MetaMask'ı BNB Smart Chain ağına geçir.");
+    if (account !== ACCOUNT) throw new Error(`Yanlış cüzdan: ${account || "bağlı değil"}`);
+    const balance = BigInt(await rpc("eth_getBalance", [ACCOUNT,"latest"]));
+    const approved = await allowance();
+    const pair = await pairAddress();
+    if (pair !== "0x0000000000000000000000000000000000000000") {
+      approveButton.disabled = true;
+      liquidityButton.disabled = true;
+      status.textContent = `Havuz zaten oluşturulmuş: ${pair}\nhttps://bscscan.com/address/${pair}`;
+      return;
+    }
+    approveButton.disabled = approved >= TOKEN_AMOUNT;
+    liquidityButton.disabled = approved < TOKEN_AMOUNT || balance < MIN_BALANCE;
+    status.textContent = `Cüzdan doğrulandı.\nBNB: ${(Number(balance) / 1e18).toFixed(6)}\nRouter izni: ${(Number(approved) / 1e18).toFixed(4)} QRVN`;
+  }
+
+  document.querySelector("#connect").onclick = async () => {
+    try { await rpc("eth_requestAccounts"); await refresh(); }
+    catch (error) { status.textContent = error.message; }
+  };
+
+  approveButton.onclick = async () => {
+    approveButton.disabled = true;
+    try {
+      const data = "0x095ea7b3" + addressWord(ROUTER) + word(TOKEN_AMOUNT);
+      const tx = { from: ACCOUNT, to: TOKEN, data };
+      tx.gas = await rpc("eth_estimateGas", [tx]);
+      const hash = await rpc("eth_sendTransaction", [tx]);
+      status.textContent = `QRVN izni gönderildi: ${short(hash)}\nOnay bekleniyor…`;
+      await waitReceipt(hash);
+      await refresh();
+    } catch (error) { status.textContent = `İzin verilmedi: ${error.message}`; approveButton.disabled = false; }
+  };
+
+  liquidityButton.onclick = async () => {
+    liquidityButton.disabled = true;
+    try {
+      const deadline = BigInt(Math.floor(Date.now()/1000) + 1200);
+      const data = "0xf305d719" + addressWord(TOKEN) + word(TOKEN_AMOUNT) + word(MIN_TOKEN) + word(MIN_BNB) + addressWord(ACCOUNT) + word(deadline);
+      const tx = { from: ACCOUNT, to: ROUTER, value: `0x${BNB_AMOUNT.toString(16)}`, data };
+      tx.gas = await rpc("eth_estimateGas", [tx]);
+      const hash = await rpc("eth_sendTransaction", [tx]);
+      status.textContent = `Likidite işlemi gönderildi: ${short(hash)}\nOnay bekleniyor…`;
+      await waitReceipt(hash);
+      await refresh();
+    } catch (error) { status.textContent = `Havuz oluşturulmadı: ${error.message}`; liquidityButton.disabled = false; }
+  };
+
+  async function waitReceipt(hash) {
+    for (;;) {
+      const receipt = await rpc("eth_getTransactionReceipt", [hash]);
+      if (receipt) {
+        if (receipt.status !== "0x1") throw new Error(`İşlem başarısız: ${hash}`);
+        return receipt;
+      }
+      await new Promise(resolve => setTimeout(resolve, 2500));
+    }
+  }
+
+  window.ethereum?.on?.("accountsChanged", refresh);
+  window.ethereum?.on?.("chainChanged", refresh);
+</script>
+</body>
+</html>
