@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 26.03 26.45">
+  <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: url(#linear-gradient2);
+      }
+
+      .st1 {
+        fill: url(#linear-gradient1);
+      }
+
+      .st2 {
+        fill: #305be8;
+      }
+
+      .st3 {
+        fill: #000a36;
+      }
+
+      .st4 {
+        fill: url(#linear-gradient);
+      }
+
+      .st5 {
+        fill: #000b39;
+      }
+
+      .st6 {
+        fill: #010e3e;
+      }
+
+      .st7 {
+        fill: #375cf8;
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="-854.56" y1="609.09" x2="-784.47" y2="750.68" gradientTransform="translate(115.43 -71.89) scale(.12)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#02e8fd"/>
+      <stop offset=".74" stop-color="#503ffa"/>
+      <stop offset="1" stop-color="#a953fb"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient1" x1="-777.02" y1="717.22" x2="-759.42" y2="750.9" gradientTransform="translate(115.43 -71.89) scale(.12)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6938f9"/>
+      <stop offset="1" stop-color="#ae56fb"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient2" x1="-801.42" y1="694.47" x2="-788.2" y2="720.29" gradientTransform="translate(115.43 -71.89) scale(.12)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3661fb"/>
+      <stop offset="1" stop-color="#6035f9"/>
+    </linearGradient>
+  </defs>
+  <path class="st6" d="M14.33,26.39c-4.13.37-7.88-1.11-10.7-4.07C-1.5,16.92-1.16,8.39,4.46,3.31c4.9-4.43,12.4-4.41,17.27.07,2.4,2.2,3.97,5.13,4.29,8.41v2.99c-.62,6.06-5.55,11.07-11.69,11.62Z"/>
+  <g>
+    <path class="st4" d="M19.32,14.02c-.12-.47-.08-.84.12-1.12l-.11-.64c-.38-2.58-2.34-4.72-4.83-5.29-2.7-.62-5.4.54-6.83,2.9-1.31,2.15-1.25,4.87.11,6.95s3.67,3.2,6.16,2.96c.34-.03.65-.04.98,0l2.55,2.71c-2.69,1.32-5.73,1.38-8.41.17-5.46-2.46-7.67-9.01-4.89-14.28,2.2-4.19,6.98-6.32,11.56-5.04,4.31,1.21,7.2,5.02,7.41,9.49l-4.07,2.63c.06-.58.2-.99.25-1.44Z"/>
+    <path class="st1" d="M16.28,19.04c0-.36.31-.61.92-.75.37-.48,1.35-1.06,1.91-.79l1.84,1.98,2.06,2.16-4.22.05-2.51-2.66Z"/>
+    <path class="st0" d="M17.23,15.52l1.89,1.98-1.47.61c-.23.64-.9.44-1.36.93l-3.25-3.49.08-.1c1.37-.02,2.75,0,4.11.08Z"/>
+    <path class="st2" d="M16.07,15.4c.38,0,.81-.09,1.16.12l-4.2.03s.08-.15-.06-.2c1.04-.04,2.07-.02,3.1.06Z"/>
+    <path class="st5" d="M16.07,15.4l-3.1-.06,2.85-.07c.14,0,.24.05.25.14Z"/>
+    <path class="st3" d="M19.44,12.9l-.12,1.12c-.21-.26-.2-1.13,0-1.5.11.09.12.24.13.38Z"/>
+    <path class="st7" d="M19.44,12.9c-.06-.1-.12-.24-.13-.38v-.25c.04.18.25.39.13.64Z"/>
+  </g>
+</svg>
